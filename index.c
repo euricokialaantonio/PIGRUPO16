@@ -26,28 +26,29 @@ Saida* guardarDadoDeSaida(Saida *s, float num){
 		
 	}
 	
-}
+} 
 
 //FUNCAO PARA REMOVER NUMERO NA PILHA
 Saida* removerDaSaida(Saida **s){
 	Saida *remover = NULL; 
 	
-	if(*s){//VERIFICA SE A PILHA ESTÁ VAZIA
+	if(*s){//VERIFICA SE A PILHA ESTï¿½ VAZIA
 		remover = *s;
-		*s = remover->outro;  
+		*s = remover->outro; 
+		return remover; 
 		
 	} else {
 		printf("A pilha esta vazia RR."); 
+		return NULL;
 		
-	}
-	return remover;
+	} 
 	
 } 
 
 //STRUCT INFIXA - PILHA 
-typedef struct lista{
+typedef struct pilha{
 	char dado;
-	struct lista *outro;
+	struct pilha *outro;
 	
 }Pilha; 
 
@@ -55,7 +56,7 @@ typedef struct lista{
 Pilha* inserir(Pilha *pilha, char valor){
 	Pilha *novo = malloc(sizeof(Pilha));
 	
-	if(novo){//VERIFICA SE A MEMÓRIA FOI ALOCADA
+	if(novo){//VERIFICA SE A MEMï¿½RIA FOI ALOCADA
 		novo->dado = valor;
 		novo->outro = pilha;
 		return novo;
@@ -75,12 +76,13 @@ Pilha* removerDaPilha(Pilha **pilha){
 	if(*pilha){ //VERIFICA SE A PILHA ESTA VAZIA
 		remover = *pilha;
 		*pilha = remover->outro;  
+		return remover;
 		
 	} else {
-		printf("A pilha esta vazia PP.");  
+		printf("A pilha esta vazia PP."); 
+		return NULL; 
 		
-	}  
-	return remover;
+	}   
 	
 }//FIM DA PILHA PRINCIPAL
 
@@ -89,20 +91,21 @@ typedef struct fila{
 	char dado;
 	struct fila *outro;
 	
-}Fila; 
+}Fila;  
 
 //FUNCAO PARA INSERIR OS CARACTERES NA FILA E FORMAR A EXPRESSAO POSFIXA
 Fila* enviarNaFila(Fila **f, char dado){
-	Fila *au, *novo = malloc(sizeof(Saida));
+	Fila *novo = malloc(sizeof(Fila));
 	
-	if(novo){//VERIFICA SE A MEMÓRIA FOI ALOCADA
+	if(novo){//VERIFICA SE A MEMï¿½RIA FOI ALOCADA
 		novo->dado = dado;
 		novo->outro = NULL;
+		
 		if(*f == NULL){
 			*f = novo;
 			 
 		}else{
-			au = *f;
+			Fila *au = *f;
 			while(au->outro){
 				au = au->outro; 
 				
@@ -125,17 +128,18 @@ Fila* removerDaFila(Fila **f){
 	if(*f){ //VERIFICA SE A FILA ESTA VAZIA
 		remover = *f;
 		*f = remover->outro;  
+		return remover;
 		
 	} else {
 		printf("A pilha esta vazia.");  
+		return NULL;
 		
-	}  
-	return remover;
+	}   
 	
 } 
 
 //DEFININDO QUAL OPERACAO REALIZAR PARA CADA OPERADOR MATEMATICO
-float calcularEpressao(float n1, float n2, char sinal){ 
+float calcularValores(float n1, float n2, char sinal){ 
 	
 	switch(sinal){
 		case '+': 
@@ -150,8 +154,8 @@ float calcularEpressao(float n1, float n2, char sinal){
 			return n1 * n2; 
 			break;
 			
-		case '/': 
-			return n1 / n2; 
+		case '/':  
+			return n1 / n2;  
 			break;
 			
 		case '^':  
@@ -197,65 +201,74 @@ int verificarOrdenDeProcedencia(char sa, char se){
 				
 			}
 			break;
-		case '^':
-			if(se == '*' || se == '/' || se == '+' || se == '-'){
-				return 1;
+		case '^':  
+				return 0; 
 				
-			}else{
-				return 0;
-				
-			}
 			break;
 				
 	}
 	
 } 
 
-//FUNÇÃO QUE RETORNA O VALOR DE CADA EXPRESSAO MATEMATICA NO ARQUIVO
-float calcular(char car[]){
-	//ARQUIVOS DE TEXTO
+//FUNï¿½ï¿½O QUE RETORNA O VALOR DE CADA EXPRESSAO MATEMATICA NO ARQUIVO
+float calcularExpressao(char car[]){
+	//ARQUIVOS DE TEXTO 
 	FILE *file = fopen("out.txt", "a");
 	Saida *s = NULL, *n1, *n2;
-	float r; 
-	char arg[255];
+	float r;
+	int divPorZero = 0; 
+	char arg[255] = {0};
 	strcpy(arg, car);
 	
 	//PILHAS,FILAS E PONTEIROS
 	char *token;
 	token = strtok(arg, " ");
 	
-	while(token){ 
-	char c = token[0]; 
-	if(token[0] != ' '){  
-		if(token[0] == '+' || token[0] == '-' || token[0] == '/' || token[0] == '*' || token[0] == '^'){  
-			  
-			n2 = removerDaSaida(&s);  //REMOVE O NUMERO QUE ESTA NO TOPO
-			n1 = removerDaSaida(&s); //ESTE AGORA É O TOPO - REMOVE TAMBEM
-			r = calcularEpressao(n1->dado, n2->dado, token[0]);//PEGA OS VALORES N1 E N2 E REALIZA A OPERCAO
-			s = guardarDadoDeSaida(s, r);
-			free(n1);
-			free(n2);  
-			
-		} else{    
-		   	r = strtol(token, NULL, 10);//converte o token em decimal
-			s = guardarDadoDeSaida(s, r);
-		 
-		}    
-	  
-	}
+	while(token){  
+		if(token[0] != ' '){  
+			if(token[0] == '+' || token[0] == '-' || token[0] == '/' || token[0] == '*' || token[0] == '^'){  
+				  
+				n2 = removerDaSaida(&s);  //REMOVE O NUMERO QUE ESTA NO TOPO  
+				n1 = removerDaSaida(&s); //ESTE AGORA ï¿½ O TOPO - REMOVE TAMBEM  
+				r = calcularValores(n1->dado, n2->dado, token[0]);//PEGA OS VALORES N1 E N2 E REALIZA A OPERCAO	
+				if(n2->dado == 0){ 
+					divPorZero = 1;
+					s = NULL;
+					
+				}
+				
+				s = guardarDadoDeSaida(s, r);    
+				free(n1);
+				free(n2);  
+				
+			} else{    
+			   	r = strtof(token, NULL);//converte o token em decimal 
+			    if(r > 0){
+				s = guardarDadoDeSaida(s, r); 
+				
+			    }  
+			 
+			}    
+		  
+		}
 		token = strtok(NULL, " "); 
 		
-	}   
+	}    
 	
-	if(s != NULL){
-		n1 = removerDaSaida(&s);  
-		r = n1->dado; 
-		free(n1);  
-				fprintf(file, "\n %.2f ", r); //ESCREVE O RESULTADO NOM ARQUIVO OUT.TXT
-			fclose(file); 
-		return r;
+	if(divPorZero != 0){
+		fprintf(file, "\n Erro. Divisao por zero.");
 		
-	}	   
+	}else{   
+	  
+		n1 = removerDaSaida(&s);  
+		r = n1->dado;  
+		free(n1);
+		fprintf(file, "\n %.2f ", r); //ESCREVE O RESULTADO NOM ARQUIVO OUT.TXT 
+			
+	}  
+	    
+	fclose(file);
+	s = NULL;	   
 	
 }
 
@@ -268,8 +281,7 @@ float lerArquivo(char caminho[]){
 	//PILHAS,FILAS E PONTEIROS
 	Pilha *pilha = NULL, *remover; 
 	Fila *f = NULL, *rf; 
-	Saida *s = NULL, *rs; 
-	char ep[255];
+	Saida *s = NULL, *rs;  
 	char c;
 	 
 	int retorno, i = 0;
@@ -277,9 +289,8 @@ float lerArquivo(char caminho[]){
 	
 	if(arquivo){
 		while(fgets(caminho, 255, arquivo) != '\0'){//PEGAR CADA LINHA DO ARQUIVO
-			
 			int a = 0;
-			while(caminho[a] != '\0'){ 
+			while(caminho[a] != '\0'){  
 				if(caminho[a] != ' '){  
 				c = caminho[a];
 					if(caminho[a] == '('){
@@ -330,7 +341,7 @@ float lerArquivo(char caminho[]){
 										enviarNaFila(&f, ' ');  
 										
 									} 
-									
+									free(remover);
 									if(pilha == NULL){
 										retorno = 0;
 										
@@ -357,76 +368,66 @@ float lerArquivo(char caminho[]){
 					}   
 					
 				}    
-				a++;  
+			a++;
 				
 			}     
-			
-			label:
-			if(pilha){//VERIFICA SE A PILHA ESTA VAZIA
+			 
+			while(pilha){//VERIFICA SE A PILHA ESTA VAZIA
 				remover = removerDaPilha(&pilha); //SE NAO REMOVE DA PILHA    
 				enviarNaFila(&f, remover->dado); //INSERI NA FILA PARA FORMAR A EXPRESSAO POSFIXA  
-				enviarNaFila(&f, ' '); 
-				goto label;    
+				enviarNaFila(&f, ' ');   
+				free(remover);  
 				
-			} 
-			  
-			int b = 0;   
+			}  
+			
+			char npf[255] = {0};
+			int contador = 0;   
 			while(f){
-				ep[b] = f->dado; 
+				npf[contador++] = f->dado; 
 				f = f->outro;
-				b++;
 				
-			}
-			char dest[255];
-			strcpy(dest, ep);        
+			}    
 			
 			//VERIFICANDO SE OS PARENTESES FORAM BEM BALANCEADOS
 			if(i == 2){
-				fprintf(file, "\nErro: Caracteres invalidos"); 
-				printf("\nErro: Caracteres invalidos"); 
+				fprintf(file, "\n Erro: Caracteres invalidos");  
 				
-			} else { 
-			if(parentesA[0] != '(' && parentesF[0] != ')'){  
-				printf("\nResultado: %.2f ", calcular(ep)); 
-				
-			} else if(parentesA[0] == '(' && parentesF[0] == ')'){
-				printf("\nResultado: %.2f ", calcular(ep));      
+			} else if(parentesA[0] != '(' && parentesF[0] != ')' || parentesA[0] == '(' && parentesF[0] == ')'){
+				calcularExpressao(npf);      
 				
 			}else{ 
-				fprintf(file, "Erro. Parenteses desbalanceados.\n"); 	
+				fprintf(file, "\n Erro. Parenteses desbalanceados."); 	
 				
 			}   
 			
-			}
-				fclose(file);
-			
-			f = '\0';
-			pilha = '\0';
-			s = '\0';
+			f = NULL;
+			pilha = NULL; 
 			parentesA[0] = ' ';  
 			parentesF[0] = ' ';  
 			retorno = 0;
 			i = 0;
 			
 		} 
+	printf("\n\n Analize das expressoes terminada com sucesso. \n Verifique o arquivo out.txt. Obrigado!\n");
 	
 	fclose(arquivo);  
-	fclose(file);  	 	
+	fclose(file);  
+		 	
 	}else{
-		printf("Erro ao pegar o arquivo.\n Certifiquese de que digitou correctamente o caminho."); 
+		printf("\n\n Erro ao pegar o arquivo.\n Certifiquese de que digitou correctamente o caminho.\n"); 
 		
 	}  
 	
 }  
 
-int main(){ 
-	char nomearquivo[255] = "c:\\users\\euricoAntonio\\desktop\\in.txt";
-	lerArquivo(nomearquivo);   
-	/*char nomearquivo[255];
-	printf("\nInforme o caminho aonde esta guardado o arquivo in.txt\n");
-	printf("Obs: caminho deve ser separado por duas barras invertidas (ex: c:\\users\\desktop\\in.txt)\n");
-	scanf("%s", &nomearquivo);
-	lerArquivo(nomearquivo);*/   
+int main(){  
+	char nomearquivo[255] = {0};
+	printf("\n\t********* Ola, bem-vindo ao analizador de expressoes ***********\n");
+	printf("\n 1-Informe o caminho aonde esta guardado o arquivo in.txt\n");
+	printf(" Obs: caminho deve ser separado por duas barras invertidas (ex: c:\\users\\desktop\\in.txt)\n");
+	printf(" R: ");
+	scanf(" %s", &nomearquivo);
+	lerArquivo(nomearquivo);    
 	
 	return 0;
 }
